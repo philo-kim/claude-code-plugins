@@ -1,0 +1,8 @@
+{
+  "name": "twophone",
+  "description": "Cross-platform mobile development tool for iOS (Swift) and Android (Kotlin) - Build native apps simultaneously without Flutter",
+  "version": "1.0.0",
+  "author": {
+    "name": "TwoPhone"
+  }
+}
