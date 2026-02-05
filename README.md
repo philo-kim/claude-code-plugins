@@ -15,6 +15,7 @@ cd claude-code-plugins
 | Plugin | Description | Install |
 |--------|-------------|---------|
 | [twophone](#twophone) | iOS/Android simultaneous development without Flutter | `./install.sh twophone` |
+| [ddd](#ddd) | Domain-Driven Design management for existing codebases | `./install.sh ddd` |
 
 ---
 
@@ -94,6 +95,99 @@ my-app/
 
 ---
 
+## ddd
+
+**Introduce and maintain DDD governance for existing codebases.**
+
+A Claude Code plugin for managing Domain-Driven Design in projects that weren't built with DDD in mind. This plugin does NOT generate application code - it creates management artifacts and provides guidance for maintaining healthy domain models.
+
+### Key Philosophy
+
+> "Maintain healthy domain models over time with AI assistance"
+
+What this plugin does:
+- Creates DDD management files (`.ddd.yaml`, `glossary.yaml`, `context-map.md`)
+- Provides deep health monitoring (Anemic Model, Transaction Script detection)
+- Offers refactoring guidance (not automatic code changes)
+
+What this plugin does NOT do:
+- Generate application code
+- Scaffold new projects
+- Auto-refactor code
+
+### Features
+
+- **Deep Health Checks** - Detect Anemic Models, Transaction Scripts, God Classes
+- **Aggregate Analysis** - Validate size, boundaries, identity references
+- **Layer Architecture** - Ensure domain independence from infrastructure
+- **Domain Event Coverage** - Track state changes that should emit events
+- **Bounded Context Isolation** - Detect context leaks and missing ACLs
+- **Ubiquitous Language** - Manage glossary and naming consistency
+- **Multi-Language Support** - TypeScript, Java, Kotlin, Python, Go, C#
+
+### Commands
+
+```bash
+/ddd analyze [path]           # Analyze codebase, create management files
+/ddd health [--full|--quick]  # Deep DDD health check
+/ddd glossary [subcommand]    # Manage ubiquitous language
+/ddd validate [target]        # Validate DDD principles
+/ddd refactor <type> [target] # Get refactoring guidance
+```
+
+### Health Checks Include
+
+| Check | Description |
+|-------|-------------|
+| Anemic Model | Detects entities with no business logic |
+| Transaction Script | Finds God Classes with procedural code |
+| Aggregate Size | Validates Vernon's aggregate rules |
+| Layer Violations | Finds framework code in domain |
+| Event Coverage | Measures domain event adoption |
+| Context Isolation | Detects cross-context dependencies |
+| Naming Consistency | Compares code with glossary |
+
+### Refactoring Guides
+
+```bash
+/ddd refactor anemic Order          # Anemic → Rich Model guide
+/ddd refactor split OrderService    # Break up God Class
+/ddd refactor extract-vo Order      # Extract Value Objects
+/ddd refactor add-event Order       # Add Domain Events
+/ddd refactor fix-layer Order       # Fix layer violations
+```
+
+### Project Structure (Generated)
+
+```
+my-project/
+├── .ddd.yaml              # DDD project configuration
+└── shared/
+    ├── glossary.yaml      # Ubiquitous language terms
+    ├── context-map.md     # Bounded context relationships
+    └── health-reports/    # Historical health reports
+        └── 2024-01-15.md
+```
+
+### Example Health Report
+
+```markdown
+## DDD Health: 58/100 (↓7)
+
+| Category | Score | Issues |
+|----------|-------|--------|
+| Anemic Model | 20/100 | 3 critical |
+| Transaction Script | 30/100 | 2 critical |
+| Aggregate Health | 65/100 | 4 warnings |
+| Layer Architecture | 40/100 | 2 critical |
+
+### Critical Issues
+- Order.ts: Anemic Model (0 business methods)
+- OrderService.ts: Transaction Script (847 lines)
+```
+
+---
+
 ## Installation
 
 ### Install specific plugin
@@ -148,4 +242,4 @@ MIT License - feel free to use in your projects.
 
 ---
 
-Made with ❤️ for vibe coders who want native mobile apps without Flutter.
+Made with ❤️ for developers who want AI-assisted development workflows.

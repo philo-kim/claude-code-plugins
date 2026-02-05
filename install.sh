@@ -16,6 +16,7 @@ NC='\033[0m' # No Color
 # Available plugins
 AVAILABLE_PLUGINS=(
     "twophone"
+    "ddd"
 )
 
 show_help() {
