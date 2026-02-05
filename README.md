@@ -5,7 +5,7 @@ A collection of useful plugins for [Claude Code](https://claude.ai/claude-code) 
 ## Quick Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-code-plugins.git
+git clone https://github.com/philo-kim/claude-code-plugins.git
 cd claude-code-plugins
 ./install.sh <plugin-name>
 ```
