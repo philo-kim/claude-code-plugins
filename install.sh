@@ -17,6 +17,7 @@ NC='\033[0m' # No Color
 AVAILABLE_PLUGINS=(
     "twophone"
     "ddd"
+    "health"
 )
 
 show_help() {

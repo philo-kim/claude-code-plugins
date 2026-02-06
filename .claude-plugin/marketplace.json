@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "claude-code-plugins",
-  "description": "Cross-platform mobile development and DDD governance plugins for Claude Code",
+  "description": "AI-assisted governance plugins for vibe coders - Keep your project healthy while building fast",
   "owner": {
     "name": "philo-kim"
   },
@@ -9,7 +9,7 @@
     {
       "name": "twophone",
       "description": "Cross-platform mobile development tool for iOS (Swift) and Android (Kotlin) - Build native apps simultaneously without Flutter",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": {
         "name": "TwoPhone"
       },
@@ -19,11 +19,21 @@
     {
       "name": "ddd",
       "description": "Domain-Driven Design management plugin - Introduce and maintain DDD governance for existing codebases",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "author": {
         "name": "philo-kim"
       },
       "source": "./plugins/ddd",
+      "category": "development"
+    },
+    {
+      "name": "health",
+      "description": "Project health governor - Security, technical debt, dependencies, and performance in one scan",
+      "version": "1.0.0",
+      "author": {
+        "name": "philo-kim"
+      },
+      "source": "./plugins/health",
       "category": "development"
     }
   ]

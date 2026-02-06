@@ -1,6 +1,8 @@
 # Claude Code Plugins
 
-A collection of useful plugins for [Claude Code](https://claude.ai/claude-code) - Anthropic's official CLI for Claude.
+AI-assisted governance plugins for vibe coders. Build fast, stay healthy.
+
+> "Make invisible problems visible. Don't write code for users — show them what needs attention."
 
 ## Quick Install
 
@@ -12,10 +14,13 @@ cd claude-code-plugins
 
 ## Available Plugins
 
-| Plugin | Description | Install |
-|--------|-------------|---------|
-| [twophone](#twophone) | iOS/Android simultaneous development without Flutter | `./install.sh twophone` |
-| [ddd](#ddd) | Domain-Driven Design management for existing codebases | `./install.sh ddd` |
+| Plugin | What it does | Command | Install |
+|--------|-------------|---------|---------|
+| [twophone](#twophone) | Cross-platform iOS/Android sync | `/twophone` | `./install.sh twophone` |
+| [ddd](#ddd) | Domain model health governance | `/ddd` | `./install.sh ddd` |
+| [health](#health) | Project health (security, debt, deps, perf) | `/health` | `./install.sh health` |
+
+Each plugin is **one smart command**. AI figures out what's needed from context.
 
 ---
 
@@ -23,44 +28,29 @@ cd claude-code-plugins
 
 **Build native iOS (Swift) and Android (Kotlin) apps simultaneously without Flutter.**
 
-A Claude Code plugin designed for "vibe coders" who want to develop for both mobile platforms using AI assistance.
-
-### Features
-
-- 🚀 **Project Scaffolding** - Create iOS/Android project structure at once
-- 🔄 **Code Sync** - Sync changes between Swift and Kotlin
-- 📦 **Model Generation** - Generate models from OpenAPI specs for both platforms
-- 🎨 **Design System Sync** - Sync colors, typography, spacing
-- 🌍 **Localization Sync** - Unified i18n for both platforms
-- 🔗 **Deep Link/Routing** - Configure routes for iOS and Android
-- 🔔 **Push Notifications** - FCM setup for both platforms
-- 🚩 **Feature Flags** - Firebase Remote Config integration
-- 📦 **Asset Management** - Resize and sync assets
-- 🏷️ **Version Sync** - Keep version numbers in sync
-- 🧪 **Test Generation** - Generate tests for both platforms
-- ⚡ **Full Auto** - Run all essential syncs at once
+One command detects what changed and syncs everything needed.
 
 ### Commands
 
 ```bash
-/twophone init <project-name>     # Initialize new project
-/twophone sync <file>             # Sync code changes
-/twophone model <openapi.yaml>    # Generate models from API spec
-/twophone scaffold <feature>      # Generate feature structure
-/twophone auto                    # Full auto sync
-/twophone design-system           # Sync design tokens
-/twophone localize                # Sync localizations
-/twophone routes                  # Sync deep links/routing
-/twophone push --setup            # Setup push notifications
-/twophone feature-flag --sync     # Sync feature flags
-/twophone assets                  # Sync assets
-/twophone release --bump patch    # Bump version
-/twophone test --sync             # Sync tests
+/twophone                         # Smart sync — detects changes, syncs everything
+/twophone init <project-name>     # Initialize new project (first time only)
+/twophone release --bump patch    # Version sync and release (deploy time only)
 ```
 
-### Swift ↔ Kotlin Pattern Mapping
+### What `/twophone` Does Automatically
 
-The plugin includes comprehensive pattern mapping:
+- Model changes detected → sync Swift/Kotlin models
+- `shared/design-tokens.yaml` changed → regenerate Colors, Typography, Spacing
+- `shared/strings.yaml` changed → regenerate localizations
+- `shared/routes.yaml` changed → regenerate routing
+- `shared/feature-flags.yaml` changed → regenerate feature flags
+- New feature on one platform → scaffold on the other
+- Asset changes → resize and sync across platforms
+- Test gaps → generate test templates
+- Version mismatch → sync version numbers
+
+### Swift ↔ Kotlin Pattern Mapping
 
 | Swift | Kotlin |
 |-------|--------|
@@ -69,7 +59,6 @@ The plugin includes comprehensive pattern mapping:
 | `async/await` | `suspend + coroutines` |
 | `[T]` | `List<T>` |
 | `Bool` | `Boolean` |
-| `T?` | `T?` |
 
 ### Project Structure
 
@@ -86,10 +75,11 @@ my-app/
 │       ├── models/
 │       └── services/
 ├── shared/                 # Shared definitions
-│   ├── api/
+│   ├── api-spec.yaml
 │   ├── design-tokens.yaml
 │   ├── strings.yaml
-│   └── routes.yaml
+│   ├── routes.yaml
+│   └── feature-flags.yaml
 └── .twophone.json          # Project config
 ```
 
@@ -99,87 +89,45 @@ my-app/
 
 **Introduce and maintain DDD governance for existing codebases.**
 
-A Claude Code plugin for managing Domain-Driven Design in projects that weren't built with DDD in mind. This plugin does NOT generate application code - it creates management artifacts and provides guidance for maintaining healthy domain models.
-
-### Key Philosophy
-
-> "Maintain healthy domain models over time with AI assistance"
-
-What this plugin does:
-- Creates DDD management files (`.ddd.yaml`, `glossary.yaml`, `context-map.md`)
-- Provides deep health monitoring (Anemic Model, Transaction Script detection)
-- Offers refactoring guidance (not automatic code changes)
-
-What this plugin does NOT do:
-- Generate application code
-- Scaffold new projects
-- Auto-refactor code
-
-### Features
-
-- **Deep Health Checks** - Detect Anemic Models, Transaction Scripts, God Classes
-- **Aggregate Analysis** - Validate size, boundaries, identity references
-- **Layer Architecture** - Ensure domain independence from infrastructure
-- **Domain Event Coverage** - Track state changes that should emit events
-- **Bounded Context Isolation** - Detect context leaks and missing ACLs
-- **Ubiquitous Language** - Manage glossary and naming consistency
-- **Multi-Language Support** - TypeScript, Java, Kotlin, Python, Go, C#
+One command analyzes your domain model health, validates changes, checks naming consistency, and suggests refactoring — all in one pass.
 
 ### Commands
 
 ```bash
-/ddd analyze [path]           # Analyze codebase, create management files
-/ddd health [--full|--quick]  # Deep DDD health check
-/ddd glossary [subcommand]    # Manage ubiquitous language
-/ddd validate [target]        # Validate DDD principles
-/ddd refactor <type> [target] # Get refactoring guidance
+/ddd                              # Smart analysis — everything relevant
+/ddd analyze [path]               # First-time DDD introduction
 ```
 
-### Health Checks Include
+### What `/ddd` Does Automatically
 
-| Check | Description |
-|-------|-------------|
-| Anemic Model | Detects entities with no business logic |
-| Transaction Script | Finds God Classes with procedural code |
-| Aggregate Size | Validates Vernon's aggregate rules |
-| Layer Violations | Finds framework code in domain |
-| Event Coverage | Measures domain event adoption |
-| Context Isolation | Detects cross-context dependencies |
-| Naming Consistency | Compares code with glossary |
+- Domain code changed → run health checks (7 categories)
+- New files/classes → validate DDD principles (10 rules)
+- Naming changes → check glossary consistency
+- Critical issues found → suggest refactoring with before/after examples
 
-### Refactoring Guides
+### Health Categories
 
-```bash
-/ddd refactor anemic Order          # Anemic → Rich Model guide
-/ddd refactor split OrderService    # Break up God Class
-/ddd refactor extract-vo Order      # Extract Value Objects
-/ddd refactor add-event Order       # Add Domain Events
-/ddd refactor fix-layer Order       # Fix layer violations
-```
+| Category | What It Detects |
+|----------|----------------|
+| Anemic Model | Domain objects without behavior |
+| Transaction Script | God Classes with procedural code |
+| Aggregate Health | Oversized aggregates, boundary violations |
+| Layer Architecture | Framework code in domain layer |
+| Domain Events | State changes without events |
+| Context Isolation | Cross-context dependencies |
+| Naming Consistency | Code terms vs glossary |
 
-### Project Structure (Generated)
+### Example Output
 
 ```
-my-project/
-├── .ddd.yaml              # DDD project configuration
-└── shared/
-    ├── glossary.yaml      # Ubiquitous language terms
-    ├── context-map.md     # Bounded context relationships
-    └── health-reports/    # Historical health reports
-        └── 2024-01-15.md
-```
-
-### Example Health Report
-
-```markdown
 ## DDD Health: 58/100 (↓7)
 
 | Category | Score | Issues |
 |----------|-------|--------|
-| Anemic Model | 20/100 | 3 critical |
-| Transaction Script | 30/100 | 2 critical |
-| Aggregate Health | 65/100 | 4 warnings |
-| Layer Architecture | 40/100 | 2 critical |
+| Anemic Model | 🔴 20/100 | 3 critical |
+| Transaction Script | 🔴 30/100 | 2 critical |
+| Aggregate Health | 🟡 65/100 | 4 warnings |
+| Layer Architecture | 🔴 40/100 | 2 critical |
 
 ### Critical Issues
 - Order.ts: Anemic Model (0 business methods)
@@ -188,35 +136,57 @@ my-project/
 
 ---
 
+## health
+
+**Project health governor — Security, technical debt, dependencies, and performance in one scan.**
+
+One command checks everything. AI decides what's relevant based on your project type.
+
+### Commands
+
+```bash
+/health                           # Smart scan — checks everything applicable
+/health init                      # First-time setup (creates .health.yaml)
+```
+
+### What `/health` Scans
+
+| Area | Weight | What It Checks |
+|------|--------|---------------|
+| Security | 30% | Unauthenticated endpoints, hardcoded secrets, injection vectors |
+| Technical Debt | 30% | Complexity hotspots, long functions, TODO age, test gaps |
+| Dependencies | 20% | Unmaintained packages, license conflicts, duplicates |
+| Performance | 20% | Bundle budget, N+1 queries, memory leaks, re-renders |
+
+### Example Output
+
+```
+## Project Health: 72/100
+
+보안       ██████░░░░  62  — API 3개 인증 없음, .env 하드코딩 1건
+부채       ████████░░  78  — hotspot 2개, TODO 14개 (최고 43일)
+의존성     █████████░  85  — 미유지 패키지 1개, 중복 라이브러리 1쌍
+성능       ███████░░░  65  — 번들 387KB (예산 300KB 초과)
+
+💡 가장 시급: API /users 엔드포인트에 인증이 없습니다. 의도적인가요?
+```
+
+### Supported Languages
+
+JavaScript/TypeScript, Python, Java, Kotlin, Swift, Go, Ruby
+
+---
+
 ## Installation
 
-### Install specific plugin
-
 ```bash
-./install.sh twophone
+./install.sh twophone    # Install specific plugin
+./install.sh all         # Install all plugins
+./install.sh list        # List available plugins
+./install.sh uninstall twophone  # Uninstall
 ```
 
-### Install all plugins
-
-```bash
-./install.sh all
-```
-
-### List available plugins
-
-```bash
-./install.sh list
-```
-
-### Uninstall a plugin
-
-```bash
-./install.sh uninstall twophone
-```
-
-## Manual Installation
-
-Copy the plugin folder to your Claude plugins directory:
+### Manual Installation
 
 ```bash
 cp -r plugins/twophone ~/.claude/plugins/
@@ -227,19 +197,20 @@ cp -r plugins/twophone ~/.claude/plugins/
 - [Claude Code](https://claude.ai/claude-code) CLI installed
 - macOS / Linux (Windows WSL supported)
 
+## Philosophy
+
+These plugins share a common design:
+
+1. **One smart command** — AI figures out what's needed from context
+2. **Governance, not automation** — Show problems, don't force fixes
+3. **Incremental adoption** — Works on existing projects without rewriting
+4. **YAML as source of truth** — Human-readable, version-controllable config
+5. **Health scores with trends** — Track improvement over time
+
 ## Contributing
 
-Contributions are welcome! Feel free to:
-
-- Report bugs
-- Suggest new features
-- Submit pull requests
-- Create new plugins
+Contributions are welcome! Feel free to report bugs, suggest features, or create new plugins.
 
 ## License
 
-MIT License - feel free to use in your projects.
-
----
-
-Made with ❤️ for developers who want AI-assisted development workflows.
+MIT License

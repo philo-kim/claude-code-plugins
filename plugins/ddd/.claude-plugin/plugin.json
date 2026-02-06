@@ -1,28 +1,16 @@
 {
   "name": "ddd",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Domain-Driven Design management plugin - Introduce and maintain DDD governance for existing codebases",
   "author": "philo-kim",
   "commands": [
     {
+      "name": "ddd",
+      "description": "Smart DDD governance - analyzes domain model health, validates changes, checks naming consistency"
+    },
+    {
       "name": "analyze",
-      "description": "Analyze codebase and generate DDD management artifacts (.ddd.yaml, glossary.yaml, context-map.md)"
-    },
-    {
-      "name": "health",
-      "description": "Deep DDD health check - detect Anemic Models, Transaction Scripts, layer violations, and more"
-    },
-    {
-      "name": "glossary",
-      "description": "Manage Ubiquitous Language glossary - review, update, and check naming consistency"
-    },
-    {
-      "name": "validate",
-      "description": "Validate DDD principles compliance - check Aggregate boundaries, domain isolation, and patterns"
-    },
-    {
-      "name": "refactor",
-      "description": "Get refactoring guides for DDD improvements - Anemic to Rich Model, God Class splitting, etc."
+      "description": "First-time DDD introduction - analyze codebase and generate management artifacts"
     }
   ],
   "skills": [
