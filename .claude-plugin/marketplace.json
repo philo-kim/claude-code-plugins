@@ -1,6 +1,6 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
-  "name": "claude-code-plugins",
+  "name": "philo-governance-plugins",
   "description": "AI-assisted governance plugins for vibe coders - Keep your project healthy while building fast",
   "owner": {
     "name": "philo-kim"
