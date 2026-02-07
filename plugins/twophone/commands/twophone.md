@@ -7,20 +7,12 @@ argument-hint: [file-path | --full]
 
 One command. AI detects what changed and syncs what's needed.
 
-## How It Works
+## Core Principles
 
-`/twophone` scans your project, detects changes since the last sync, and automatically runs all necessary synchronization tasks. No need to remember which command to use.
-
-## Default Behavior (No Arguments)
-
-```
-1. Read .twophone.json (suggest /twophone init if missing)
-2. Detect changes via git diff / git status
-3. Determine what needs syncing
-4. Execute applicable sync tasks
-5. Validate with sync-reviewer agent
-6. Report results
-```
+- **Use TodoWrite**: Create a checklist of ALL sync tasks before starting. Update as you progress.
+- **Agent delegation**: Use auto-sync agent for file creation, sync-reviewer agent for validation.
+- **Ask before large changes**: If more than 10 files need creation, confirm with the user first.
+- **Never stop after analysis**: Analysis is Phase 1. The main job is Phase 2 (creating files).
 
 ## Options
 
@@ -30,29 +22,47 @@ One command. AI detects what changed and syncs what's needed.
 
 ---
 
-## Phase 1: Project Analysis
+## Phase 1: Discovery
+
+**Goal**: Understand what needs syncing
+
+**Actions**:
+1. Create a TodoWrite checklist with all phases
+2. Read `.twophone.json` for project configuration
+   - If missing → suggest `/twophone init` and stop
+3. Scan iOS and Android directory structures
+4. Detect changes:
+   - `git diff --name-only` (uncommitted)
+   - `git diff HEAD~1 --name-only` (recent commit)
+   - Compare platform file counts for parity gaps
+5. Build complete list of what needs syncing
+
+Present summary to user:
 
 ```
-1. Read .twophone.json for project configuration
-2. Scan iOS/Android directory structure
-3. Detect changed files:
-   - git diff --name-only (uncommitted changes)
-   - git diff HEAD~1 --name-only (recent commit)
-4. Categorize changes by type
-5. Identify missing files/configurations
+Found: X files changed, Y files missing on iOS, Z files missing on Android
+Sync tasks: [list each task]
 ```
 
-## Phase 2: Smart Sync
+**Ask user**: "Proceed with sync?" (if more than 10 files)
 
-Execute only the tasks that are needed based on detected changes.
+---
 
-### Model Sync
+## Phase 2: Sync Execution
 
-**Trigger**: Changes in `Models/*.swift`, `models/*.kt`, or `shared/api-spec.yaml`
+**Goal**: Create and update all necessary files
 
-- Compare model files between iOS and Android
-- If API spec changed: regenerate models for both platforms
-- If one platform changed: convert and sync to the other
+**CRITICAL**: This is the main phase. Do NOT skip or abbreviate.
+
+Launch **auto-sync agent** with clear instructions:
+- Pass the list of tasks identified in Phase 1
+- Agent has Write, Edit, Glob, Grep, Bash tools — it will create the actual files
+- Agent follows Swift ↔ Kotlin conversion patterns from the swift-kotlin-patterns skill
+
+If syncing a single file (`/twophone path/to/file`):
+- Read the source file
+- Convert using type/pattern mapping
+- Create the target file directly (no agent needed for single file)
 
 **Type mapping** (Swift ↔ Kotlin):
 
@@ -66,137 +76,66 @@ Execute only the tasks that are needed based on detected changes.
 | `[K: V]` | `Map<K, V>` |
 | `Date` | `String` (with `@SerialName`) |
 | `UUID` | `String` |
-| `enum CodingKeys` | `@SerialName` annotations |
-
-### Service/API Sync
-
-**Trigger**: Changes in `Services/*.swift` or `services/*.kt`
-
-- Compare service methods between platforms
-- Convert async patterns: `async/await` ↔ `suspend/coroutines`
-- Verify endpoint consistency
-- Generate missing methods
-
-**Pattern mapping**:
-
-| Swift | Kotlin |
-|-------|--------|
-| `actor APIClient` | `object ApiClient` |
 | `async throws -> T` | `suspend fun(): T` |
-| `URLSession.shared.data(from:)` | `client.get().body()` |
-| `Task { }` | `viewModelScope.launch { }` |
+| `@Observable` | `ViewModel + StateFlow` |
 
-### Design Token Sync
+**Sync categories** (execute only what's needed):
 
-**Trigger**: Changes in `shared/design-tokens.yaml`
+| Trigger | Action |
+|---------|--------|
+| Model files changed/missing | Convert and create model counterparts |
+| Service files changed/missing | Convert async patterns, create counterparts |
+| `shared/design-tokens.yaml` changed | Generate platform-specific color/typography/spacing files |
+| `shared/strings.yaml` changed | Generate Localizable.strings (iOS) and strings.xml (Android) |
+| `shared/routes.yaml` changed | Generate Router (iOS) and NavGraph (Android) |
+| `shared/feature-flags.yaml` changed | Generate flag classes for both platforms |
+| Assets changed in `shared/assets/` | Sync to platform asset directories |
+| Feature exists on one platform only | Scaffold View + ViewModel on missing platform |
+| Tests exist on one platform only | Generate test templates for missing platform |
+| Version mismatch | Update Info.plist and build.gradle |
 
-- Parse YAML for colors, typography, spacing, radius
-- Generate iOS: `Colors.swift`, `Typography.swift`, `Spacing.swift`
-- Generate Android: `Color.kt`, `Type.kt`, `Spacing.kt`
-
-### Localization Sync
-
-**Trigger**: Changes in `shared/strings.yaml`
-
-- Parse hierarchical YAML structure
-- Generate iOS: `*.lproj/Localizable.strings` + type-safe `Strings.swift`
-- Generate Android: `values-*/strings.xml`
-- Warn about missing keys in any language
-
-### Route Sync
-
-**Trigger**: Changes in `shared/routes.yaml`
-
-- Parse route definitions (scheme, paths, params)
-- Generate iOS: Router enum + URL handling extensions
-- Generate Android: Sealed Route class + NavGraph configuration
-
-### Feature Flag Sync
-
-**Trigger**: Changes in `shared/feature-flags.yaml`
-
-- Parse flag definitions (name, type, default value)
-- Generate iOS: `@Observable` class with `RemoteConfig`
-- Generate Android: Object singleton with `MutableStateFlow`
-
-### Asset Sync
-
-**Trigger**: Changes in `shared/assets/` or platform asset directories
-
-- Detect new/changed images and icons
-- Generate iOS: Asset catalog entries (1x/2x/3x)
-- Generate Android: drawable resources (mdpi/hdpi/xhdpi/xxhdpi/xxxhdpi)
-- Map icon names: SF Symbols ↔ Material Icons
-- Warn about missing resolutions
-
-### Scaffold Detection
-
-**Trigger**: New feature directory detected on one platform but not the other
-
-- Detect MVVM structure (View/Screen + ViewModel) on one platform
-- Generate corresponding structure on the other platform
-- iOS: `*View.swift` + `*ViewModel.swift` (SwiftUI + @Observable)
-- Android: `*Screen.kt` + `*ViewModel.kt` (Compose + StateFlow)
-
-### Test Sync
-
-**Trigger**: Test files exist on one platform but not the other
-
-- Detect test files and their corresponding source files
-- Generate test templates for the other platform
-- iOS: XCTest with async test patterns
-- Android: JUnit + kotlinx-coroutines-test
-
-### Push Notification Check
-
-**Trigger**: FCM configuration files detected or changed
-
-- Verify `GoogleService-Info.plist` (iOS) and `google-services.json` (Android)
-- Check notification handling code on both platforms
-- Warn about missing notification setup
-
-### Version Sync
-
-**Trigger**: Version mismatch between `.twophone.json`, Info.plist, build.gradle
-
-- Read version from `.twophone.json`
-- Compare with iOS `Info.plist` and Android `build.gradle`
-- Update if mismatched
+---
 
 ## Phase 3: Validation
 
-Invoke **sync-reviewer agent** to verify:
+**Goal**: Verify sync quality
+
+Launch **sync-reviewer agent** to check:
 - Model field matching across platforms
 - API endpoint consistency
 - Type compatibility
-- Missing counterpart files
+- No remaining missing counterpart files
+
+---
 
 ## Phase 4: Report
+
+**Goal**: Summarize what was done
+
+Mark all TodoWrite items complete, then report:
 
 ```markdown
 # TwoPhone Sync Complete
 
-## Executed
-✅ Model sync: 5 files (2 new, 3 updated)
-✅ Design tokens: 15 colors, 4 fonts, 6 spacing
-✅ Localization: 2 languages, 45 keys
-✅ Version sync: 1.2.0 (build 42)
+## Created/Updated
+- [list every file with path and action: New/Updated]
 
-## Skipped (no changes detected)
-⏭️ Routes, Feature flags, Assets, Push
+## Skipped (no changes needed)
+- [list areas that didn't need sync]
 
 ## Manual Review Required
-⚠️ ProfileService.swift — Complex async logic, verify Kotlin conversion
-⚠️ analytics_icon.png — Missing 3x resolution
+- [files with complex logic that need human verification]
 
 ## Platform Parity
 | Category | iOS | Android | Status |
 |----------|-----|---------|--------|
-| Models | 8 | 8 | ✅ In sync |
-| Services | 5 | 4 | ⚠️ 1 missing |
-| Features | 6 | 6 | ✅ In sync |
-| Tests | 3 | 1 | ⚠️ 2 missing |
+| Models | N | N | status |
+| Services | N | N | status |
+| Features | N | N | status |
+| Tests | N | N | status |
 ```
+
+---
 
 ## Configuration (.twophone.json)
 
@@ -205,6 +144,10 @@ Invoke **sync-reviewer agent** to verify:
   "projectName": "MyApp",
   "version": "1.2.0",
   "build": 42,
+  "platforms": {
+    "ios": { "path": "ios/MyApp", "bundleId": "com.example.myapp" },
+    "android": { "path": "android/app", "packageName": "com.example.myapp" }
+  },
   "auto": {
     "syncModels": true,
     "syncServices": true,
@@ -212,20 +155,7 @@ Invoke **sync-reviewer agent** to verify:
     "syncStrings": true,
     "syncDesignTokens": true,
     "syncVersion": true,
-    "ignorePaths": [
-      "ios/MyApp/Generated/*",
-      "android/app/src/main/java/*/generated/*"
-    ]
-  },
-  "platforms": {
-    "ios": {
-      "path": "ios/MyApp",
-      "bundleId": "com.example.myapp"
-    },
-    "android": {
-      "path": "android/app",
-      "packageName": "com.example.myapp"
-    }
+    "ignorePaths": ["ios/MyApp/Generated/*", "android/app/src/main/java/*/generated/*"]
   }
 }
 ```
@@ -233,6 +163,6 @@ Invoke **sync-reviewer agent** to verify:
 ## Notes
 
 - Recommend `git commit` before running with `--full`
-- `--full` mode backs up existing files with `.backup` extension
-- Asks confirmation on conflicts
-- Specific file sync: `/twophone path/to/file.swift` syncs just that file
+- `--full` mode backs up existing files before regeneration
+- Asks confirmation on conflicts (both sides changed)
+- If sync is interrupted, run `/twophone` again — it detects remaining gaps

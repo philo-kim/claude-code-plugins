@@ -5,45 +5,51 @@ argument-hint: [--quick | --focus <area> | --since <date>]
 
 # /health — Smart Project Health Scan
 
-One command. Four areas. AI decides what matters.
+One command. Four areas. AI scans, reports, and fixes what you approve.
 
-## How It Works
+## Core Principles
 
-`/health` reads your project, detects what's there, and scans everything relevant. No configuration required — but `.health.yaml` lets you tune thresholds if you want.
+- **Use TodoWrite**: Create a checklist of all scan and fix tasks. Update as you progress.
+- **Agent delegation**: Use health-scanner agent for analysis, health-fixer agent for fixes.
+- **Ask before fixing**: Always show the report first. Only fix after user approval.
+- **Never stop after analysis**: If fixable issues are found and the user approves, proceed to fix them.
 
-## Default Behavior (No Arguments)
+## Options
 
-```
-1. Check for .health.yaml
-   - Exists → Use configured thresholds
-   - Missing → Use sensible defaults (suggest /health init)
+- (no args): Full smart scan — checks everything, then offers to fix
+- `--quick`: Critical issues only — skip warnings, skip trends
+- `--focus <area>`: Focus on one area: `security`, `debt`, `deps`, `perf`
+- `--since <date>`: Compare with specific previous scan
+- `--ci`: Machine-readable output, exit code 1 if score below threshold (no fixes)
 
-2. Detect project type, language, framework
+---
 
-3. Determine what to scan:
+## Phase 1: Discovery
+
+**Goal**: Understand what to scan
+
+**Actions**:
+1. Create TodoWrite checklist with all phases
+2. Check for `.health.yaml`
+   - Exists → use configured thresholds
+   - Missing → use sensible defaults (suggest `/health init`)
+3. Detect project type, language, framework
+4. Determine applicable scans:
    - Has routes/endpoints? → Security scan
    - Has source code? → Debt scan (always)
    - Has dependency manifest? → Dependency scan
    - Has build output or bundle? → Performance scan
+5. Load previous health report for trend comparison
 
-4. Run health-scanner agent on all applicable areas
+---
 
-5. Generate unified report with scores and recommendations
-```
+## Phase 2: Deep Analysis
 
-## Options
+**Goal**: Comprehensive health scan
 
-- (no args): Full smart scan — checks everything applicable
-- `--quick`: Critical issues only — skip warnings, skip trends
-- `--focus <area>`: Focus on one area: `security`, `debt`, `deps`, `perf`
-- `--since <date>`: Compare with specific previous scan
-- `--ci`: Machine-readable output, exit code 1 if score below threshold
-
-## Analysis Areas
+Launch **health-scanner agent** on all applicable areas:
 
 ### Security (Weight: 30%)
-
-Scans for governance gaps in authentication, secrets, and input validation.
 
 | Check | Severity | What |
 |-------|----------|------|
@@ -58,11 +64,9 @@ Scans for governance gaps in authentication, secrets, and input validation.
 
 ### Technical Debt (Weight: 30%)
 
-Measures code complexity, change patterns, and maintenance signals.
-
 | Check | Severity | What |
 |-------|----------|------|
-| Complexity hotspot (churn × complexity) | Critical | Files that change often AND are complex |
+| Complexity hotspot (churn x complexity) | Critical | Files that change often AND are complex |
 | Function > 200 lines | Critical | Extremely long functions |
 | Class > 1000 lines | Critical | God classes |
 | Function > 50 lines | Warning | Long functions |
@@ -71,8 +75,6 @@ Measures code complexity, change patterns, and maintenance signals.
 | No tests for high-complexity files | Warning | Untested risky code |
 
 ### Dependencies (Weight: 20%)
-
-Checks package health, licensing, and bloat.
 
 | Check | Severity | What |
 |-------|----------|------|
@@ -85,8 +87,6 @@ Checks package health, licensing, and bloat.
 
 ### Performance (Weight: 20%)
 
-Detects patterns that cause slowness or resource waste.
-
 | Check | Severity | What |
 |-------|----------|------|
 | N+1 query pattern | Critical | Database call inside loop |
@@ -96,53 +96,116 @@ Detects patterns that cause slowness or resource waste.
 | Large unoptimized assets | Warning | Images > 500KB |
 | Bundle 10-50% over budget | Warning | Approaching limit |
 
-## Output Format
+---
+
+## Phase 3: Report
+
+Present the full report:
 
 ```markdown
-## Project Health: 72/100 (↓3)
+## Project Health: 72/100 (trend)
 
-보안       ██████░░░░  62  — API 3개 인증 없음, .env 하드코딩 1건
-부채       ████████░░  78  — hotspot 2개, TODO 14개 (최고 43일)
-의존성     █████████░  85  — 미유지 패키지 1개, 중복 라이브러리 1쌍
-성능       ███████░░░  65  — 번들 387KB (예산 300KB 초과)
+보안       [BAR]  62  — summary
+부채       [BAR]  78  — summary
+의존성     [BAR]  85  — summary
+성능       [BAR]  65  — summary
 
-### Critical (즉시 조치)
+### Critical (Immediate Action)
+| # | Area | Location | Issue | Recommendation |
+|---|------|----------|-------|----------------|
 
-| # | 영역 | 위치 | 문제 | 권장 조치 |
-|---|------|------|------|-----------|
-| 1 | 보안 | routes/admin.ts:12 | /admin/users 인증 없음 | auth middleware 추가 |
-| 2 | 보안 | config/db.ts:5 | DB 비밀번호 하드코딩 | 환경변수로 이동 |
-| 3 | 부채 | services/Order.ts | 847줄, 복잡도 42 | 책임별로 분리 |
+### Warning (Plan Needed)
+| # | Area | Location | Issue |
+|---|------|----------|-------|
 
-### Warning (계획 필요)
+### Auto-Fixable Issues
+| # | Area | Issue | Fix | Risk |
+|---|------|-------|-----|------|
+| 1 | Security | .env not in .gitignore | Add .env to .gitignore | None |
+| 2 | Security | Hardcoded DB password in config/db.ts | Move to environment variable | Low |
+| 3 | Debt | 5 TODOs older than 30 days | Remove resolved, create issues for remaining | None |
+| 4 | Security | CORS allows all origins | Restrict to specific domains | Low |
+| 5 | Perf | Missing cleanup on event listeners | Add removeEventListener in cleanup | Low |
 
-| # | 영역 | 위치 | 문제 |
-|---|------|------|------|
-| 1 | 의존성 | moment@2.29.4 | 3년간 미업데이트 |
-| 2 | 성능 | dist/main.js | 387KB (예산 300KB) |
-| 3 | 부채 | utils/helpers.ts:23 | TODO: 43일 경과 |
-
-### 추세
-
-| 영역 | 이전 | 현재 | 변화 |
-|------|------|------|------|
-| 보안 | 65 | 62 | ↓ -3 |
-| 부채 | 75 | 78 | ↑ +3 |
-| 의존성 | 85 | 85 | → 0 |
-| 성능 | 68 | 65 | ↓ -3 |
-
-### Top 3 권장 조치
-
-1. admin 라우트에 인증 미들웨어 추가 (보안 +8점 예상)
-2. OrderService 분리 (부채 +5점 예상)
-3. moment → dayjs 교체 (의존성 +3점, 성능 +5점 예상)
+### Trend
+| Area | Previous | Current | Change |
+|------|----------|---------|--------|
 ```
+
+**CRITICAL**: After the report, always ask:
+
+> "Auto-fixable issues found. Fix them now?"
+> - Fix all auto-fixable issues
+> - Choose which to fix
+> - Skip (report only)
+
+---
+
+## Phase 4: Execute Fixes
+
+**CRITICAL**: Only proceed after user approval from Phase 3.
+
+Launch **health-fixer agent** with the approved fix list. The agent will:
+
+### Fixable Issue Types
+
+| Issue Type | What the Agent Does |
+|------------|-------------------|
+| **Missing .gitignore entries** | Add .env, *.key, credentials.* to .gitignore |
+| **Hardcoded secrets** | Move to .env file, replace with `process.env.VAR` / `os.environ` |
+| **Missing auth middleware** | Add auth guard/middleware to unprotected routes |
+| **Permissive CORS** | Replace wildcard with specific allowed origins |
+| **Old TODOs** | Remove resolved TODOs, create GitHub issues for remaining |
+| **Missing event cleanup** | Add removeEventListener / unsubscribe in cleanup functions |
+| **Missing .env.example** | Create .env.example with variable names (no values) |
+| **Verbose error messages** | Replace stack traces with generic messages in production |
+
+### Fix Execution Pattern
+
+For each approved fix:
+1. Show the specific change preview (before/after)
+2. Create/modify the file
+3. Mark TodoWrite item complete
+
+### Safety Rules
+
+- **Non-destructive**: Never delete code without replacement
+- **Backup first**: Create `.health-backup/` before modifying
+- **Security-sensitive**: For auth/secrets fixes, always show the full change before applying
+- **Scope-limited**: Only fix issues identified in Phase 2 — no "while I'm here" improvements
+
+---
+
+## Phase 5: Summary
+
+After all fixes (or if user chose report-only):
+
+```markdown
+# Health Scan Complete
+
+## Score: 72/100 (trend)
+
+## Fixed (if applicable)
+- [list each fix with file path]
+- Expected score improvement: +N points
+
+## Remaining Critical Issues
+- [issues requiring manual attention]
+
+## Recommended Next Steps
+1. [Most impactful manual action]
+2. [Second most impactful]
+3. [Third most impactful]
+```
+
+Save report to `shared/health-reports/[date].md`.
+
+---
 
 ## Configuration (.health.yaml)
 
-Run `/health init` to generate, or create manually. See template for all options.
+Run `/health init` to generate, or create manually. Key settings:
 
-Key settings:
 - `scoring.weights` — Adjust area importance
 - `security.allowed_public_endpoints` — Don't flag intentionally public routes
 - `debt.max_function_lines` — Adjust for your team's standards
@@ -150,9 +213,12 @@ Key settings:
 - `performance.bundle_budget_kb` — Set your bundle budget
 - `ignore` — Exclude paths from scanning
 
-## Saving Reports
+## First Run
 
-Reports are automatically saved to `shared/health-reports/[date].md` for trend tracking.
+If `.health.yaml` doesn't exist, `/health` will:
+1. Run with sensible defaults
+2. Show results
+3. Suggest running `/health init` for customization
 
 ## CI/CD Integration
 
@@ -164,10 +230,3 @@ Reports are automatically saved to `shared/health-reports/[date].md` for trend t
     HEALTH_MIN_SCORE: 70
     HEALTH_FAIL_ON_CRITICAL: true
 ```
-
-## First Run
-
-If `.health.yaml` doesn't exist, `/health` will:
-1. Run with sensible defaults
-2. Show results
-3. Suggest running `/health init` for customization
