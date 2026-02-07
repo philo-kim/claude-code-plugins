@@ -1,139 +1,222 @@
 ---
-description: Smart cross-platform sync - detects changes and syncs everything needed
+description: Smart cross-platform sync - ensures your iOS and Android apps express the same domain model completely
 argument-hint: [file-path | --full]
 ---
 
-# /twophone — Smart Cross-Platform Sync
+# /twophone — Cross-Platform Domain Sync
 
-One command. AI detects what changed and syncs what's needed.
+Two apps. One domain model. AI ensures both are complete.
+
+## Philosophy
+
+Software is an encoding of a domain model. An iOS app and an Android app of the same product encode the same domain model in different mechanisms (Swift vs Kotlin, SwiftUI vs Compose, URLSession vs Retrofit). Sync means ensuring the domain model is completely expressed on both platforms.
+
+There are no categories to check, no layers to compare, no fixed list of file types. AI reads the code, understands the domain model, and fills what's missing — natively.
 
 ## Core Principles
 
-- **Use TodoWrite**: Create a checklist of ALL sync tasks before starting. Update as you progress.
-- **Agent delegation**: Use auto-sync agent for file creation, sync-reviewer agent for validation.
+- **Use TodoWrite**: List every gap found. Mark each as complete only after the file is created.
+- **Agent delegation**: Use auto-sync agent for creation, sync-reviewer agent for verification.
 - **Ask before large changes**: If more than 10 files need creation, confirm with the user first.
-- **Never stop after analysis**: Analysis is Phase 1. The main job is Phase 2 (creating files).
+- **Do not stop until done**: Keep creating files until every TodoWrite item is complete. If context is running low, tell the user to run `/twophone` again to continue.
 
 ## Options
 
-- (no args): Smart mode — detect and sync everything needed
-- `<file-path>`: Sync a specific file between platforms
-- `--full`: Full regeneration of all synced files (backs up first)
+- (no args): Smart mode — scan, find gaps, fill them
+- `<file-path>`: Sync a specific file to the other platform
+- `--full`: Full parity scan (ignores git diff, compares everything)
 
 ---
 
-## Phase 1: Discovery
+## Phase 1: Declarative Sync
 
-**Goal**: Understand what needs syncing
+**Goal**: Generate code from shared definitions (if they exist)
+
+If `shared/` directory contains YAML definitions, generate platform code from them:
+- `design-tokens.yaml` → Colors, Typography, Spacing for both platforms
+- `strings.yaml` → Localizable.strings (iOS) + strings.xml (Android)
+- `routes.yaml` → Router (iOS) + NavGraph (Android)
+- `feature-flags.yaml` → Flag classes for both platforms
+- `api-spec.yaml` → Model/DTO generation for both platforms
+
+Skip this phase if no `shared/` YAML files exist. This is optional — not all projects use it.
+
+---
+
+## Phase 2: Domain Completeness Scan
+
+**Goal**: Find every gap where the domain model exists on one platform but not the other
+
+**CRITICAL**: This is exhaustive. Do not limit to specific directories or file types.
 
 **Actions**:
-1. Create a TodoWrite checklist with all phases
-2. Read `.twophone.json` for project configuration
-   - If missing → suggest `/twophone init` and stop
-3. Scan iOS and Android directory structures
-4. Detect changes:
-   - `git diff --name-only` (uncommitted)
-   - `git diff HEAD~1 --name-only` (recent commit)
-   - Compare platform file counts for parity gaps
-5. Build complete list of what needs syncing
+1. Read `.twophone.json` for platform paths. **If missing → auto-detect and create it**:
+   - Scan project root for `ios/` and `android/` directories
+   - Find the main source directories (where `.swift` and `.kt` files live)
+   - Infer project name from directory structure or `package.json` / `build.gradle`
+   - Create `.twophone.json` with detected paths and sensible defaults
+   - Continue immediately — do not stop or ask the user
+2. List ALL source files on both platforms:
+   - iOS: every `.swift` file (excluding Generated/, Pods/, build/)
+   - Android: every `.kt` file (excluding generated/, build/)
+3. For each file, AI reads it and understands what domain concept it encodes:
+   - What data does it define?
+   - What behavior does it implement?
+   - What contracts does it expose?
+   - What does it depend on?
+4. Match files across platforms by domain concept (not by name or directory)
+5. Identify:
+   - **Gaps**: Domain concepts encoded on one platform but not the other
+   - **Drift**: Matched pairs where the domain model diverges (different fields, missing methods)
+   - **Platform-specific**: Code that genuinely belongs to only one platform (widgets, watch extensions, etc.) — skip these
 
-Present summary to user:
+6. Group gaps by dependency clusters — files that need each other to work
+7. Create TodoWrite with every gap, grouped by cluster
 
+Present to user:
+
+```markdown
+## Domain Parity: X/100
+
+### Gaps Found
+| Cluster | Platform Missing | Files Needed | Source Files |
+|---------|-----------------|--------------|--------------|
+| Auth data access | iOS | 3 | AuthRepositoryImpl.kt, AuthRemoteDataSource.kt, AuthMapper.kt |
+| Offline caching | iOS | 4 | UserDao.kt, UserEntity.kt, AppDatabase.kt, CacheManager.kt |
+| ...
+
+### Drift Found
+| Concept | iOS | Android | Difference |
+|---------|-----|---------|------------|
+| User model | User.swift | User.kt | iOS missing `lastSyncDate` field |
+| ...
+
+### Platform-Specific (skipped)
+| File | Platform | Reason |
+|------|----------|--------|
+| WatchExtension.swift | iOS only | Apple Watch specific |
+| ...
+
+Proceed with sync? (Y files to create, Z fields to update)
 ```
-Found: X files changed, Y files missing on iOS, Z files missing on Android
-Sync tasks: [list each task]
-```
-
-**Ask user**: "Proceed with sync?" (if more than 10 files)
 
 ---
 
-## Phase 2: Sync Execution
+## Phase 3: Generate
 
-**Goal**: Create and update all necessary files
+**Goal**: Fill every gap with native platform code
 
-**CRITICAL**: This is the main phase. Do NOT skip or abbreviate.
+**CRITICAL**: Do not stop until every TodoWrite item is complete.
 
-Launch **auto-sync agent** with clear instructions:
-- Pass the list of tasks identified in Phase 1
-- Agent has Write, Edit, Glob, Grep, Bash tools — it will create the actual files
-- Agent follows Swift ↔ Kotlin conversion patterns from the swift-kotlin-patterns skill
+Launch **auto-sync agent** with:
+- The complete gap list from Phase 2
+- For each gap: the source files to read, the target platform, the target path
 
-If syncing a single file (`/twophone path/to/file`):
-- Read the source file
-- Convert using type/pattern mapping
-- Create the target file directly (no agent needed for single file)
+The agent will:
+1. Read all source files in a dependency cluster
+2. Extract the domain model (data, behavior, contracts)
+3. Re-express it using the target platform's native patterns
+4. Write the files
+5. Mark each TodoWrite item complete
+6. Move to the next cluster
 
-**Type mapping** (Swift ↔ Kotlin):
-
-| Swift | Kotlin |
-|-------|--------|
-| `struct X: Codable, Hashable, Sendable` | `@Serializable data class X` |
-| `let` / `var` | `val` / `var` |
-| `String`, `Int`, `Double`, `Bool` | `String`, `Int`, `Double`, `Boolean` |
-| `T?` | `T?` (with `= null` default) |
-| `[T]` | `List<T>` |
-| `[K: V]` | `Map<K, V>` |
-| `Date` | `String` (with `@SerialName`) |
-| `UUID` | `String` |
-| `async throws -> T` | `suspend fun(): T` |
-| `@Observable` | `ViewModel + StateFlow` |
-
-**Sync categories** (execute only what's needed):
-
-| Trigger | Action |
-|---------|--------|
-| Model files changed/missing | Convert and create model counterparts |
-| Service files changed/missing | Convert async patterns, create counterparts |
-| `shared/design-tokens.yaml` changed | Generate platform-specific color/typography/spacing files |
-| `shared/strings.yaml` changed | Generate Localizable.strings (iOS) and strings.xml (Android) |
-| `shared/routes.yaml` changed | Generate Router (iOS) and NavGraph (Android) |
-| `shared/feature-flags.yaml` changed | Generate flag classes for both platforms |
-| Assets changed in `shared/assets/` | Sync to platform asset directories |
-| Feature exists on one platform only | Scaffold View + ViewModel on missing platform |
-| Tests exist on one platform only | Generate test templates for missing platform |
-| Version mismatch | Update Info.plist and build.gradle |
+**If there are too many files for one pass**: The agent creates as many as it can, then the command tells the user to run `/twophone` again to continue from where it left off (TodoWrite preserves state).
 
 ---
 
-## Phase 3: Validation
+## Phase 4: Fix Drift
 
-**Goal**: Verify sync quality
+**Goal**: Align matched pairs where domain models diverge
 
-Launch **sync-reviewer agent** to check:
-- Model field matching across platforms
-- API endpoint consistency
-- Type compatibility
-- No remaining missing counterpart files
+For each drift item found in Phase 2:
+- Read both files
+- Determine which platform has the more complete version
+- Update the less-complete file to match
+- Show the change to the user before applying
 
 ---
 
-## Phase 4: Report
+## Phase 5: Verify
 
-**Goal**: Summarize what was done
+**Goal**: Confirm domain completeness
 
-Mark all TodoWrite items complete, then report:
+Launch **sync-reviewer agent** to verify:
+- All previously identified gaps are now filled
+- No new gaps introduced
+- Matched pairs have consistent domain models (fields, types, methods)
+
+---
+
+## Phase 6: Report
 
 ```markdown
 # TwoPhone Sync Complete
 
-## Created/Updated
-- [list every file with path and action: New/Updated]
+## Domain Parity: X/100 → Y/100
 
-## Skipped (no changes needed)
-- [list areas that didn't need sync]
+## Created
+- [every file created, with path]
 
-## Manual Review Required
-- [files with complex logic that need human verification]
+## Updated
+- [every file modified for drift fix]
+
+## Remaining (if any)
+- [gaps that couldn't be filled in this pass]
+- Run `/twophone` again to continue
 
 ## Platform Parity
-| Category | iOS | Android | Status |
-|----------|-----|---------|--------|
-| Models | N | N | status |
-| Services | N | N | status |
-| Features | N | N | status |
-| Tests | N | N | status |
+| Concept Area | iOS | Android | Status |
+|-------------|-----|---------|--------|
+| Data models | N | N | status |
+| Business logic | N | N | status |
+| Data access | N | N | status |
+| State management | N | N | status |
+| Presentation | N | N | status |
 ```
+
+---
+
+## Type & Pattern Reference
+
+The only hardcoded rules. Everything else is AI understanding.
+
+### Type Mapping (Swift ↔ Kotlin)
+
+| Swift | Kotlin |
+|-------|--------|
+| `struct X: Codable` | `@Serializable data class X` |
+| `let` / `var` | `val` / `var` |
+| `String`, `Int`, `Double`, `Bool` | `String`, `Int`, `Double`, `Boolean` |
+| `T?` | `T?` (with `= null`) |
+| `[T]` | `List<T>` |
+| `[K: V]` | `Map<K, V>` |
+| `Date` | Instant / String |
+| `UUID` | String |
+| `Data` | ByteArray |
+
+### Pattern Mapping (Swift ↔ Kotlin)
+
+| Swift | Kotlin |
+|-------|--------|
+| `async throws -> T` | `suspend fun(): T` |
+| `@Observable class` | `ViewModel` + `StateFlow` |
+| `protocol X` | `interface X` |
+| `actor` | `object` + `Mutex` / synchronized |
+| `Task { }` | `viewModelScope.launch { }` |
+| `try await` | `suspend` + `try/catch` |
+
+### Platform Mechanism Mapping
+
+| Concern | iOS | Android |
+|---------|-----|---------|
+| Persistence | SwiftData / CoreData | Room |
+| Network | URLSession | Retrofit / Ktor |
+| Secure storage | Keychain | EncryptedSharedPreferences |
+| Simple storage | UserDefaults | DataStore |
+| Background work | BGTaskScheduler | WorkManager |
+| Push | APNs | FCM |
+| DI | Environment / manual | Hilt / Koin |
+| Navigation | NavigationStack | Navigation Compose |
 
 ---
 
@@ -142,27 +225,20 @@ Mark all TodoWrite items complete, then report:
 ```json
 {
   "projectName": "MyApp",
-  "version": "1.2.0",
-  "build": 42,
+  "version": "1.0.0",
   "platforms": {
-    "ios": { "path": "ios/MyApp", "bundleId": "com.example.myapp" },
-    "android": { "path": "android/app", "packageName": "com.example.myapp" }
+    "ios": { "path": "ios/MyApp" },
+    "android": { "path": "android/app/src/main/java/com/example/myapp" }
   },
-  "auto": {
-    "syncModels": true,
-    "syncServices": true,
-    "syncAssets": true,
-    "syncStrings": true,
-    "syncDesignTokens": true,
-    "syncVersion": true,
-    "ignorePaths": ["ios/MyApp/Generated/*", "android/app/src/main/java/*/generated/*"]
-  }
+  "ignore": [
+    "**/Generated/**", "**/build/**", "**/Pods/**",
+    "**/*.generated.swift", "**/*.generated.kt"
+  ]
 }
 ```
 
 ## Notes
 
-- Recommend `git commit` before running with `--full`
-- `--full` mode backs up existing files before regeneration
-- Asks confirmation on conflicts (both sides changed)
-- If sync is interrupted, run `/twophone` again — it detects remaining gaps
+- `git commit` before `--full` mode
+- If sync is interrupted, run `/twophone` again — it picks up from where it left off
+- Platform-specific code (widgets, watch, wear) is automatically detected and skipped
