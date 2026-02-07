@@ -1,8 +1,0 @@
-{
-  "name": "ddd",
-  "description": "Domain-Driven Design management plugin - Introduce and maintain DDD governance for existing codebases",
-  "author": {
-    "name": "philo-kim",
-    "email": "philo@example.com"
-  }
-}

@@ -17,16 +17,6 @@
       "category": "development"
     },
     {
-      "name": "ddd",
-      "description": "Domain-Driven Design management plugin - Introduce and maintain DDD governance for existing codebases",
-      "version": "2.0.0",
-      "author": {
-        "name": "philo-kim"
-      },
-      "source": "./plugins/ddd",
-      "category": "development"
-    },
-    {
       "name": "health",
       "description": "Project health governor - Security, technical debt, dependencies, and performance in one scan",
       "version": "1.0.0",

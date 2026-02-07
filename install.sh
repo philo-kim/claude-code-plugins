@@ -16,7 +16,6 @@ NC='\033[0m' # No Color
 # Available plugins
 AVAILABLE_PLUGINS=(
     "twophone"
-    "ddd"
     "health"
     "re-arch"
 )

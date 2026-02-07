@@ -17,7 +17,6 @@ cd claude-code-plugins
 | Plugin | What it does | Command | Install |
 |--------|-------------|---------|---------|
 | [twophone](#twophone) | Cross-platform iOS/Android sync | `/twophone` | `./install.sh twophone` |
-| [ddd](#ddd) | Domain model health governance | `/ddd` | `./install.sh ddd` |
 | [health](#health) | Project health (security, debt, deps, perf) | `/health` | `./install.sh health` |
 | [re-arch](#re-arch) | Rearchitect vibe-coded projects | `/re-arch` | `./install.sh re-arch` |
 
@@ -82,57 +81,6 @@ my-app/
 │   ├── routes.yaml
 │   └── feature-flags.yaml
 └── .twophone.json          # Project config
-```
-
----
-
-## ddd
-
-**Introduce and maintain DDD governance for existing codebases.**
-
-One command analyzes your domain model health, validates changes, checks naming consistency, and suggests refactoring — all in one pass.
-
-### Commands
-
-```bash
-/ddd                              # Smart analysis — everything relevant
-/ddd analyze [path]               # First-time DDD introduction
-```
-
-### What `/ddd` Does Automatically
-
-- Domain code changed → run health checks (7 categories)
-- New files/classes → validate DDD principles (10 rules)
-- Naming changes → check glossary consistency
-- Critical issues found → suggest refactoring with before/after examples
-
-### Health Categories
-
-| Category | What It Detects |
-|----------|----------------|
-| Anemic Model | Domain objects without behavior |
-| Transaction Script | God Classes with procedural code |
-| Aggregate Health | Oversized aggregates, boundary violations |
-| Layer Architecture | Framework code in domain layer |
-| Domain Events | State changes without events |
-| Context Isolation | Cross-context dependencies |
-| Naming Consistency | Code terms vs glossary |
-
-### Example Output
-
-```
-## DDD Health: 58/100 (↓7)
-
-| Category | Score | Issues |
-|----------|-------|--------|
-| Anemic Model | 🔴 20/100 | 3 critical |
-| Transaction Script | 🔴 30/100 | 2 critical |
-| Aggregate Health | 🟡 65/100 | 4 warnings |
-| Layer Architecture | 🔴 40/100 | 2 critical |
-
-### Critical Issues
-- Order.ts: Anemic Model (0 business methods)
-- OrderService.ts: Transaction Script (847 lines)
 ```
 
 ---
