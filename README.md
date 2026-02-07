@@ -19,6 +19,7 @@ cd claude-code-plugins
 | [twophone](#twophone) | Cross-platform iOS/Android sync | `/twophone` | `./install.sh twophone` |
 | [health](#health) | Project health (security, debt, deps, perf) | `/health` | `./install.sh health` |
 | [re-arch](#re-arch) | Rearchitect vibe-coded projects | `/re-arch` | `./install.sh re-arch` |
+| [safety-net](#safety-net) | Characterization tests for untested code | `/safety-net` | `./install.sh safety-net` |
 
 Each plugin is **one smart command**. AI figures out what's needed from context.
 
@@ -156,6 +157,47 @@ Code works. Structure doesn't. One command reads everything, finds structural pr
 - Builds after every change — never leaves code broken
 - Shows plan before executing — restructures only what you approve
 - `git commit` before running — easy revert if needed
+
+---
+
+## safety-net
+
+**Characterization tests for vibe-coded projects — lock down behavior so you can refactor safely.**
+
+No spec? No tests? AI reads your code, finds critical paths, and generates tests that capture what the code does — not what it should do.
+
+### Commands
+
+```bash
+/safety-net                       # Smart mode — find critical paths, generate tests
+/safety-net src/api/              # Focus on specific directory
+/safety-net --critical            # Only the most critical paths
+```
+
+### How It Works
+
+1. **Reads your code** and understands what it does
+2. **Maps boundaries** — API endpoints, DB operations, external services
+3. **Identifies critical paths** — what would hurt most if broken
+4. **Generates characterization tests** at boundaries (input → output)
+5. **Runs all tests** to verify they pass
+
+### Why Not Regular Test Generation?
+
+| Regular AI test gen | /safety-net |
+|-------------------|------------|
+| Tests every function | Tests **boundaries** only |
+| Tests implementation | Tests **observable behavior** |
+| Breaks on refactor | **Survives refactoring** |
+| False confidence | **Real protection** |
+
+### Designed for the Workflow
+
+```
+/safety-net  →  lock down behavior
+/re-arch     →  restructure safely (tests catch breakage)
+/health      →  fix issues confidently
+```
 
 ---
 

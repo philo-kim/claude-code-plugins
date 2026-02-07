@@ -35,6 +35,16 @@
       },
       "source": "./plugins/re-arch",
       "category": "development"
+    },
+    {
+      "name": "safety-net",
+      "description": "Generate characterization tests for vibe-coded projects - lock down behavior at boundaries so you can refactor safely",
+      "version": "1.0.0",
+      "author": {
+        "name": "philo-kim"
+      },
+      "source": "./plugins/safety-net",
+      "category": "development"
     }
   ]
 }

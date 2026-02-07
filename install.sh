@@ -18,6 +18,7 @@ AVAILABLE_PLUGINS=(
     "twophone"
     "health"
     "re-arch"
+    "safety-net"
 )
 
 show_help() {

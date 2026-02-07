@@ -1,0 +1,8 @@
+{
+  "name": "safety-net",
+  "description": "Generate characterization tests for vibe-coded projects - lock down behavior at boundaries so you can refactor safely",
+  "author": {
+    "name": "philo-kim",
+    "email": "philo@example.com"
+  }
+}
