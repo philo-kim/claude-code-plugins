@@ -57,11 +57,19 @@ For each file in the cluster:
 3. **Add imports** — check what the target platform uses and add appropriate imports
 4. **Mark the TodoWrite item complete**
 
-### Step 4: Move to Next Cluster
+### Step 4: Build Check
 
-Repeat Steps 2-3 for the next dependency cluster. Continue until all TodoWrite items are complete.
+After creating all files in a cluster, run a quick compile check:
+- **iOS**: `xcodebuild build` or `swift build`
+- **Android**: `./gradlew compileDebugKotlin`
 
-### Step 5: Report
+If build fails, read the error, fix the file (missing import, type mismatch, syntax), and re-run. Do not move to the next cluster until the current one compiles.
+
+### Step 5: Move to Next Cluster
+
+Repeat Steps 2-4 for the next dependency cluster. Continue until all TodoWrite items are complete.
+
+### Step 6: Report
 
 After all gaps are filled (or context is running low), report:
 

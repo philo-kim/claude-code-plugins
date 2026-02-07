@@ -136,18 +136,36 @@ For each drift item found in Phase 2:
 
 ---
 
-## Phase 5: Verify
+## Phase 5: Build Verification
 
-**Goal**: Confirm domain completeness
+**Goal**: Confirm generated code compiles
+
+Run platform build commands to catch syntax errors, missing imports, and type mismatches:
+- **iOS**: `xcodebuild build` (or `swift build` if SPM project)
+- **Android**: `./gradlew compileDebugKotlin` (compile only, fastest check)
+
+If build fails:
+1. Read the error output
+2. Fix the issue (missing import, type mismatch, syntax error)
+3. Re-run the build
+4. Repeat until both platforms compile
+
+**CRITICAL**: Do not skip this phase. A file that doesn't compile is worse than no file.
+
+---
+
+## Phase 6: Verify Domain Completeness
+
+**Goal**: Confirm all gaps are filled and behavior is consistent
 
 Launch **sync-reviewer agent** to verify:
 - All previously identified gaps are now filled
 - No new gaps introduced
-- Matched pairs have consistent domain models (fields, types, methods)
+- Matched pairs behave the same (same data, same operations, same contracts)
 
 ---
 
-## Phase 6: Report
+## Phase 7: Report
 
 ```markdown
 # TwoPhone Sync Complete
