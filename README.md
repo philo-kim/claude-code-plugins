@@ -19,6 +19,7 @@ cd claude-code-plugins
 | [twophone](#twophone) | Cross-platform iOS/Android sync | `/twophone` | `./install.sh twophone` |
 | [ddd](#ddd) | Domain model health governance | `/ddd` | `./install.sh ddd` |
 | [health](#health) | Project health (security, debt, deps, perf) | `/health` | `./install.sh health` |
+| [re-arch](#re-arch) | Rearchitect vibe-coded projects | `/re-arch` | `./install.sh re-arch` |
 
 Each plugin is **one smart command**. AI figures out what's needed from context.
 
@@ -174,6 +175,39 @@ One command checks everything. AI decides what's relevant based on your project 
 ### Supported Languages
 
 JavaScript/TypeScript, Python, Java, Kotlin, Swift, Go, Ruby
+
+---
+
+## re-arch
+
+**Rearchitect vibe-coded projects — evaluate structure, identify problems, restructure with behavior preserved.**
+
+Code works. Structure doesn't. One command reads everything, finds structural problems, and fixes them.
+
+### Commands
+
+```bash
+/re-arch                          # Smart mode — scan, report, restructure
+/re-arch --report                 # Analysis only, no changes
+/re-arch src/services/            # Focus on specific directory
+```
+
+### What `/re-arch` Finds and Fixes
+
+| Problem | Example | What It Does |
+|---------|---------|-------------|
+| God files | Controller with 500 lines doing DB + logic + validation | Split into focused files by responsibility |
+| Wrong dependencies | Domain model importing Express types | Introduce interfaces, fix dependency direction |
+| Inconsistent patterns | 3 different state management approaches | Unify to dominant pattern |
+| Tight coupling | Changing one file breaks 10 others | Introduce boundaries and abstractions |
+| Duplicate logic | Same fetch pattern copy-pasted 8 times | Extract shared utility |
+
+### Safety
+
+- Preserves all behavior — restructures structure, not functionality
+- Builds after every change — never leaves code broken
+- Shows plan before executing — restructures only what you approve
+- `git commit` before running — easy revert if needed
 
 ---
 

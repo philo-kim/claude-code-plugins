@@ -35,6 +35,16 @@
       },
       "source": "./plugins/health",
       "category": "development"
+    },
+    {
+      "name": "re-arch",
+      "description": "Rearchitect vibe-coded projects - evaluate structure, identify problems, restructure with behavior preserved",
+      "version": "1.0.0",
+      "author": {
+        "name": "philo-kim"
+      },
+      "source": "./plugins/re-arch",
+      "category": "development"
     }
   ]
 }

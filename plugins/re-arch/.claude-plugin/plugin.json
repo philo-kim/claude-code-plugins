@@ -1,0 +1,8 @@
+{
+  "name": "re-arch",
+  "description": "Rearchitect vibe-coded projects - evaluate structure, identify problems, restructure with behavior preserved",
+  "author": {
+    "name": "philo-kim",
+    "email": "philo@example.com"
+  }
+}

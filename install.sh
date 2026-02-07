@@ -18,6 +18,7 @@ AVAILABLE_PLUGINS=(
     "twophone"
     "ddd"
     "health"
+    "re-arch"
 )
 
 show_help() {
