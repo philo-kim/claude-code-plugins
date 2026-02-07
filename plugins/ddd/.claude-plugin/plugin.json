@@ -1,33 +1,8 @@
 {
   "name": "ddd",
-  "version": "2.0.0",
   "description": "Domain-Driven Design management plugin - Introduce and maintain DDD governance for existing codebases",
-  "author": "philo-kim",
-  "commands": [
-    {
-      "name": "ddd",
-      "description": "Smart DDD governance - analyzes domain model health, validates changes, checks naming consistency"
-    },
-    {
-      "name": "analyze",
-      "description": "First-time DDD introduction - analyze codebase and generate management artifacts"
-    }
-  ],
-  "skills": [
-    "ddd-deep",
-    "language-patterns"
-  ],
-  "agents": [
-    "health-monitor",
-    "refactor-advisor"
-  ],
-  "keywords": [
-    "ddd",
-    "domain-driven-design",
-    "architecture",
-    "aggregate",
-    "bounded-context",
-    "ubiquitous-language",
-    "refactoring"
-  ]
+  "author": {
+    "name": "philo-kim",
+    "email": "philo@example.com"
+  }
 }

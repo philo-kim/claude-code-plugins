@@ -1,31 +1,8 @@
 {
   "name": "health",
-  "version": "1.0.0",
   "description": "Project health governor - Security, debt, dependencies, and performance in one scan",
-  "author": "philo-kim",
-  "commands": [
-    {
-      "name": "health",
-      "description": "Smart project health scan - detects context and checks everything"
-    },
-    {
-      "name": "init",
-      "description": "Initialize health governance for this project"
-    }
-  ],
-  "skills": [
-    "security-patterns",
-    "debt-indicators"
-  ],
-  "agents": [
-    "health-scanner"
-  ],
-  "keywords": [
-    "security",
-    "technical-debt",
-    "dependencies",
-    "performance",
-    "governance",
-    "health"
-  ]
+  "author": {
+    "name": "philo-kim",
+    "email": "philo@example.com"
+  }
 }
